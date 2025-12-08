@@ -1,7 +1,3 @@
--- Clean up old tables
-DROP TABLE IF EXISTS books;
-DROP TABLE IF EXISTS books_no_index;
-
 -- SECTION 1: TABLE WITH FULLTEXT INDEX
 
 -- 2. Create the 'books' table
@@ -58,5 +54,6 @@ SELECT * FROM books;
 SELECT '--- Test 2: Search without Index (LIKE) ---' AS test_type; 
 EXPLAIN SELECT * FROM books_no_index 
 WHERE title LIKE '%Book10%'; 
+
 
 SELECT * FROM books_no_index WHERE title LIKE '%Book10%' LIMIT 5;
