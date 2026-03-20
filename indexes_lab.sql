@@ -1,7 +1,7 @@
 -- Индексы в PostgreSQL
 
 -- Шаг 1: Создание таблицы
-DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS users; -- если она создана, то дропаем и пересоздаем 
 
 CREATE TABLE users (
     id       SERIAL PRIMARY KEY,
