@@ -1,0 +1,21 @@
+@startuml
+left to right direction
+
+actor "Фермер" as Farmer
+actor "Покупатель" as Customer
+actor "Модератор" as Moderator
+
+rectangle "Frontend\n(веб-интерфейс)" as Frontend
+rectangle "Backend API\n(бизнес-логика)" as Backend
+database "Database\n(пользователи, товары,\nзаказы, подписки, модерация)" as DB
+rectangle "Notification Service\n(уведомления)" as Notify
+
+Farmer --> Frontend : Работа с системой
+Customer --> Frontend : Работа с системой
+Moderator --> Frontend : Работа с системой
+
+Frontend --> Backend : HTTP-запросы
+Backend --> DB : Чтение/запись данных
+Backend --> Notify : Отправка уведомлений
+
+@enduml
