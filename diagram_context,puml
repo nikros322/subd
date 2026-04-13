@@ -1,0 +1,19 @@
+@startuml
+left to right direction
+
+actor "Фермер" as Farmer
+actor "Покупатель" as Customer
+actor "Модератор" as Moderator
+
+rectangle "Система интернет-магазина\n«Грядка»" as System
+
+Farmer --> System : Добавляет товары
+System --> Farmer : Статус модерации товара
+
+Customer --> System : Просматривает товары\nОформляет заказ\nПодписывается на фермера
+System --> Customer : Список товаров\nПодтверждение заказа\nУведомления
+
+Moderator --> System : Проверяет товары
+System --> Moderator : Товары на модерацию
+
+@enduml
