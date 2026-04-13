@@ -1,0 +1,41 @@
+@startuml
+top to bottom direction
+
+package "Backend API" {
+
+  [AuthComponent] as Auth
+  [ProductComponent] as Product
+  [ModerationComponent] as Moderation
+  [OrderComponent] as Order
+  [SubscriptionComponent] as Subscription
+  [NotificationComponent] as Notification
+
+  [UserRepository] as UserRepo
+  [ProductRepository] as ProductRepo
+  [OrderRepository] as OrderRepo
+  [SubscriptionRepository] as SubscriptionRepo
+}
+
+database "Database" as DB
+rectangle "Notification Service" as NotifyService
+
+Auth --> UserRepo
+Product --> ProductRepo
+Moderation --> ProductRepo
+Order --> OrderRepo
+Subscription --> SubscriptionRepo
+Notification --> SubscriptionRepo
+Notification --> ProductRepo
+
+UserRepo --> DB
+ProductRepo --> DB
+OrderRepo --> DB
+SubscriptionRepo --> DB
+
+Product --> Moderation : Товар отправляется на проверку
+Moderation --> Product : Изменение статуса товара
+Product --> Notification : Новая продукция
+Subscription --> Notification : Список подписчиков
+Notification --> NotifyService : Отправка уведомлений
+
+@endumlv
