@@ -1,0 +1,32 @@
+@startuml
+title C4 — Диаграмма компонентов Backend: "Грядка"
+
+left to right direction
+
+rectangle "Frontend" as Frontend
+
+package "Backend API" {
+  component "Auth Service" as Auth
+  component "User Service" as UserService
+  component "Product Service" as ProductService
+  component "Moderation Service" as ModerationService
+  component "Order Service" as OrderService
+  component "Subscription Service" as SubscriptionService
+  component "Notification Service" as NotificationService
+}
+
+database "Database" as DB
+
+Frontend --> Auth
+Frontend --> UserService
+Frontend --> ProductService
+Frontend --> OrderService
+Frontend --> SubscriptionService
+
+ProductService --> ModerationService : отправляет товар на проверку
+ProductService --> DB : товары
+OrderService --> DB : заказы
+ModerationService --> DB : статус модерации
+SubscriptionService --> NotificationService : событие подписки / нового товара
+NotificationService --> DB : данные подписок
+@enduml
