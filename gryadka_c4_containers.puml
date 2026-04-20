@@ -1,0 +1,18 @@
+@startuml
+title C4 — Диаграмма контейнеров: "Грядка"
+
+left to right direction
+
+actor "Покупатель / Фермер / Модератор" as User
+
+rectangle "Web / Mobile Frontend" as Frontend
+rectangle "Backend API\n(Server)" as Backend
+database "Database" as DB
+rectangle "Notification Service" as Notify
+
+User --> Frontend : использует интерфейс
+Frontend --> Backend : HTTP / JSON
+Backend --> DB : чтение / запись данных
+Backend --> Notify : отправка уведомлений
+
+@enduml
