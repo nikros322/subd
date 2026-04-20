@@ -1,0 +1,15 @@
+@startuml
+title C4 — Диаграмма контекста: "Грядка"
+
+left to right direction
+
+actor "Покупатель" as Customer
+actor "Фермер\n(продавец)" as Farmer
+actor "Модератор" as Moderator
+
+rectangle "Система \"Грядка\"\nИнтернет-магазин фермерских продуктов" as System
+
+Customer --> System : покупает,\nсмотрит товары,\nподписывается на фермеров
+Farmer --> System : добавляет товары,\nуправляет своими продуктами
+Moderator --> System : проверяет товары\nперед публикацией
+@enduml
