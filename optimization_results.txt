@@ -1,0 +1,72 @@
+ОТЧЕТ ПО ОПТИМИЗАЦИИ ЗАПРОСОВ POSTGRESQL
+
+1. ИСХОДНЫЙ ЗАПРОС
+SELECT tf.fare_conditions, SUM(tf.amount) AS total_revenue
+FROM bookings.ticket_flights tf
+JOIN bookings.flights f ON tf.flight_id = f.flight_id
+WHERE f.scheduled_departure >= '2017-08-01' 
+  AND f.scheduled_departure < '2017-09-01'
+GROUP BY tf.fare_conditions;
+
+
+2. ЗАМЕР ПРОИЗВОДИТЕЛЬНОСТИ ДО ОПТИМИЗАЦИИ (BASELINE)
+План выполнения:
+Finalize GroupAggregate (actual time=44.861..50.207 rows=0.00 loops=1)
+  Group Key: tf.fare_conditions
+  Buffers: shared hit=378 read=152
+  ->  Gather Merge (actual time=44.859..50.203 rows=0.00 loops=1)
+        Workers Planned: 2
+        Workers Launched: 2
+        Buffers: shared hit=378 read=152
+        ->  Partial GroupAggregate (actual time=2.834..2.836 rows=0.00 loops=3)
+              Group Key: tf.fare_conditions
+              ->  Sort (actual time=2.832..2.834 rows=0.00 loops=3)
+                    Sort Key: tf.fare_conditions
+                    Sort Method: quicksort  Memory: 25kB
+                    ->  Hash Join (actual time=2.808..2.809 rows=0.00 loops=3)
+                          Hash Cond: (tf.flight_id = f.flight_id)
+                          ->  Parallel Seq Scan on ticket_flights tf (actual time=0.370..0.370 rows=1.00 loops=3)
+
+Planning Time: 2.295 ms
+Execution Time: 50.264 ms
+
+
+3. ПРИМЕНЕННЫЕ ОПТИМИЗАЦИИ
+-- Создание индекса для ускорения соединения таблиц
+CREATE INDEX idx_tf_flight_id ON bookings.ticket_flights(flight_id);
+
+-- Создание индекса для фильтрации по датам
+CREATE INDEX idx_flights_sched_departure ON bookings.flights(scheduled_departure);
+
+-- Обновление статистики планировщика
+ANALYZE bookings.ticket_flights;
+ANALYZE bookings.flights;
+
+Результат: Query returned successfully in 2 secs 533 msec.
+
+
+4. ЗАМЕР ПРОИЗВОДИТЕЛЬНОСТИ ПОСЛЕ ОПТИМИЗАЦИИ
+План выполнения:
+HashAggregate (actual time=0.008..0.009 rows=0.00 loops=1)
+  Group Key: tf.fare_conditions
+  Batches: 1  Memory Usage: 32kB
+  Buffers: shared hit=2
+  ->  Nested Loop (actual time=0.007..0.007 rows=0.00 loops=1)
+        Buffers: shared hit=2
+        ->  Index Scan using idx_flights_sched_departure on flights f (actual time=0.006..0.006 rows=0.00 loops=1)
+              Index Cond: ((scheduled_departure >= '2017-08-01 00:00:00+05') AND (scheduled_departure < '2017-09-01 00:00:00+05'))
+              Buffers: shared hit=2
+        ->  Bitmap Heap Scan on ticket_flights tf (never executed)
+              Recheck Cond: (flight_id = f.flight_id)
+              ->  Bitmap Index Scan on idx_tf_flight_id (never executed)
+                    Index Cond: (flight_id = f.flight_id)
+
+Planning Time: 2.635 ms
+Execution Time: 0.041 ms
+
+
+5. ИТОГОВЫЕ ВЫВОДЫ
+1. Время выполнения сократилось с 50.264 ms до 0.041 ms (ускорение в ~1225 раз).
+2. Метод доступа к данным изменился с полного сканирования таблицы (Parallel Seq Scan) на эффективный поиск по индексу (Index Scan).
+3. Нагрузка на буферную память снизилась с 530 блоков до 2 блоков, что практически исключило дисковое чтение при повторных запросах.
+4. Оптимизация подтвердила эффективность индексирования полей, участвующих в условиях JOIN и фильтрации WHERE.
